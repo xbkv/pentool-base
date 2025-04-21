@@ -1,0 +1,8 @@
+export const ERROR_CODES = {
+    TOKEN_EXPIRED: -3,
+    USER_DELETED: -18,
+    CALL_INACTIVE: -310,
+    LIMITED_ACCESS: -315,
+    FOLLOWER_ONLY: -317,
+    MUTUAL_ONLY: -402,
+  };  

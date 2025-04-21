@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title || "参加完了" %></title>
+  <link rel="stylesheet" href="<%= manifest['bundle.css'] %>" />
+  <link rel="icon" href="/assets/favicon.ico" />
+</head>
+<body class="bg-dark text-light d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+  <div class="joined-user-grid">
+    <% conference.conference_call_users.forEach(user => { 
+      const role = conference.conference_call_user_roles.find(r => r.user_id === user.id)?.role;
+      const isMuted = user.is_muted;
+    %>
+      <div class="user-bubble">
+        <div class="avatar-wrapper">
+          <img src="<%= user.profile_icon_thumbnail %>" alt="<%= user.nickname %>" class="user-avatar">
+          <% if (isMuted) { %>
+            <i class="fas fa-microphone-slash mic-icon"></i>
+          <% } %>
+          <% if (role === 'host') { %>
+            <span class="badge crown">👑</span>
+          <% } %>
+          <% if (role === 'moderator') { %>
+            <span class="badge mod">🌟</span>
+          <% } %>
+        </div>
+        <div class="username"><%= user.nickname %></div>
+      </div>
+    <% }) %>
+  </div>
+  
+  <script src="<%= manifest['bundle.js'] %>" defer></script>
+</body>
+</html>
