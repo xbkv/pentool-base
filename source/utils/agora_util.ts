@@ -140,9 +140,12 @@ async function startCall(conference_call_id: string, user: IBot | null): Promise
             } else if (code === ERROR_CODES.CALL_INACTIVE) {
                 console.log(setColor(colors.red, `この通話はすでに終了しています。`, -1));
                 process.exit(1);
+            } else if (code === ERROR_CODES.REQUEST_LIMIT) {
+                console.log(setColor(colors.red, "リクエスト制限に達しました。時間がたってからやり直してください。", -1));
+                process.exit(1);
             } else {
                 console.log(setColor(colors.red, `まだ識別されていないエラーコードです。${code} ${data.message}`, -1));
-                return null;
+                process.exit(1);
             }
         }
 

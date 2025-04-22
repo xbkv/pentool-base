@@ -12,7 +12,7 @@ const createWindow = () => {
         width: 460,
         height: 720,
         resizable: false,
-        frame: false, // ✅ ボーダーレス（自作UIで制御）
+        frame: false,
         transparent: false,
         webPreferences: {
             nodeIntegration: false,

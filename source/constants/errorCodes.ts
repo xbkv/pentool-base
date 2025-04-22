@@ -5,4 +5,5 @@ export const ERROR_CODES = {
     LIMITED_ACCESS: -315,
     FOLLOWER_ONLY: -317,
     MUTUAL_ONLY: -402,
+    REQUEST_LIMIT: -5301
   };  
