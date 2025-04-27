@@ -124,6 +124,9 @@ async function startCall(conference_call_id: string, user: IBot | null): Promise
                 if (isErrorResponse(data)) {
                     throw new Error(`Failed to start call after retry. Error code: ${data.error_code}, message: ${data.message}`);
                 }
+            } else if (code === ERROR_CODES.USER_BLOCKING) {
+                console.log(setColor(colors.red, `このアカウントは通話内のメンバーにブロックされています。`, -1))
+                return null;
             } else if (code === ERROR_CODES.USER_DELETED) {
                 console.log(setColor(colors.red, `ユーザーが運営に削除されたためユーザーの情報を削除します。`, -1));
                 await BotModel.deleteOne({ user_id: user?.user_id });

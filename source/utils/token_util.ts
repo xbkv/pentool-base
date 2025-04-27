@@ -57,7 +57,7 @@ export async function updateAccessToken(user: IBot | null): Promise<void> {
 
         user.access_token = loginData.access_token;
         await user.save();
-        message = `[${user?.user_id}]のアクセストークンの更新に成功しました。`;
+        message = `アクセストークンの更新に成功しました。[${user?.user_id}]`;
         const success_message = setColor(colors.green, message, 1)
         console.log(success_message);
     } catch (error) {

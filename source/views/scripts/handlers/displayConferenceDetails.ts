@@ -17,14 +17,14 @@ export function displayConferenceDetails(conference: ConferenceCall): void {
   result.innerHTML = `
     <div class="conference-card neon-panel card mt-4 p-3">
       <div class="conference-header mb-3 d-flex justify-content-between align-items-center">
-        <h5 class="text-cyber m-0">📞 通話詳細</h5>
+        <h5 class="text-cyber m-0">通話詳細</h5>
         <span class="badge bg-cyber-secondary">
           ${conference.conference_call_users_count} / ${conference.max_participants}
         </span>
       </div>
 
       <p class="mb-2 text-white"><strong>ID:</strong> ${conference.id}</p>
-      <h6 class="mb-3 text-cyber">👥 参加者一覧</h6>
+      <h6 class="mb-3 text-cyber">参加者一覧</h6>
 
       <div class="user-list mb-3">
         ${conference.conference_call_users.map(user => {
@@ -40,15 +40,19 @@ export function displayConferenceDetails(conference: ConferenceCall): void {
             : `<span class="badge bg-gray ms-auto">オフライン</span>`;
 
           return `
-            <div class="participant-item d-flex align-items-center justify-content-between">
-              <div class="participant-info d-flex align-items-center">
-                <img src="${user.profile_icon_thumbnail}" class="participant-avatar" alt="${user.nickname}">
-                <span class="text-white fw-semibold ms-2 text-truncate">${user.nickname}</span>
-                ${roleBadge}
+            <div class="participant-item d-flex align-items-center py-2 border-bottom">
+              <img src="${user.profile_icon_thumbnail}" class="participant-avatar me-2 rounded" alt="${user.nickname}">
+              <div class="flex-grow-1">
+                <div class="text-white fw-semibold text-truncate">${user.nickname}</div>
+                <div class="d-flex gap-2">
+                  ${roleBadge}
+                  ${onlineBadge}
+                </div>
               </div>
-              ${onlineBadge}
             </div>
           `;
+          
+          
         }).join('')}
       </div>
 
@@ -116,7 +120,13 @@ export function setupCyberSelectors() {
   botObserver.observe(botTypeHidden, { attributes: true, attributeFilter: ['value'] });
 
   idInput.addEventListener('input', updateSearchButtonState);
+
+  if (idTypeHidden.value && botTypeHidden.value) {
+    idInput.disabled = false;
+    updateSearchButtonState();
+  }
 }
+
 
 function setupChoiceSelector(groupId: string, hiddenId: string, defaultValue: string) {
   const group = document.getElementById(groupId);

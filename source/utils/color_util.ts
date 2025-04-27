@@ -18,20 +18,15 @@ const results: Result = {
     warning: "[⚠] "
 };
 
-function getColor(color: string): string {
-    return colors[color.toLowerCase()] || colors.reset;
-}
-
 function setColor(color: string, message: string, type: number): string {
     let prefix: string = "";
     if (type === -1) {
-        prefix = getColor(color) + results.error;
+        prefix = color + results.error;
     } else if (type === 0) {
-        prefix = getColor(color) + results.warning;
+        prefix = color + results.warning;
     } else if (type === 1) {
-        prefix = getColor(color) + results.success;
+        prefix = color + results.success;
     }
-
     return prefix + colors.white + message + colors.reset;
 }
 

@@ -148,18 +148,23 @@ body {
   }
     
   .participant-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(0, 255, 225, 0.2);
+    border-bottom: 1px solid #444; /* 仕切り線 */
   }
+  
   .participant-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    margin-right: 10px;
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px; /* ✅ 角丸四角にする */
   }
+  
+  .badge {
+    border-radius: 6px !important; /* ← 丸みを抑えて四角に近づける */
+    padding: 0.3em 0.6em;
+    font-size: 0.75rem;
+  }
+  
+
   .participant-info {
     display: flex;
     align-items: center;
@@ -303,13 +308,6 @@ body {
   font-size: 12px;
 }
 
-.badge {
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  font-size: 14px;
-  border-radius: 50%;
-}
 
 .badge.crown {
   color: #ff69b4;
@@ -339,4 +337,15 @@ body {
   justify-content: center;
   gap: 16px;
   padding: 20px;
+}
+
+#idInput {
+  background-color: #111;        /* 暗い背景 */
+  color: #0ff;                   /* 明るい文字 */
+  border: 1px solid #0ff;        /* サイバーな枠線 */
+  caret-color: #0ff;             /* 入力カーソルも明るく */
+}
+
+#idInput::placeholder {
+  color: #666;                   /* プレースホルダーは控えめに */
 }
