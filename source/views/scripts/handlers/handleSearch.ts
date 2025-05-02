@@ -6,20 +6,27 @@ const idInput = document.getElementById('idInput') as HTMLInputElement;
 
 async function displayLoadingMessage(): Promise<void> {
   result.innerHTML = `
-    <div class="hacker-loader">
-      <div class="terminal-box">
-        <span>検索中</span>
-        <div class="terminal-dots">
-          <span>.</span><span>.</span><span>.</span>
-        </div>
+  <div class="cyber-loader">
+    <div class="loader-border">
+      <div class="loader-text">🔎 検索中</div>
+      <div class="loader-dots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
       </div>
     </div>
+  </div>
   `;
 }
 
+function showNoCallMessage(message?: string, is404: boolean = false): void {
+  const displayMessage = is404
+    ? 'ユーザーの投稿が非公開、削除済み、または存在しないため、見つかりませんでした。'
+    : (message || 'エラーが発生しました。もう一度お試しください。');
 
-function showNoCallMessage(): void {
-  result.innerHTML = `<div class="alert alert-info mt-3">アクティブな通話が見つかりませんでした。</div>`;
+  result.innerHTML = `
+    <div class="cyber-info-alert">
+      ${displayMessage}
+    </div>
+  `;
 }
 
 export async function handleSearch(): Promise<void> {
@@ -55,17 +62,40 @@ export async function handleSearch(): Promise<void> {
     } else if (selectedType === "post_id") {
       response = await fetch(`/yay-api/v2/posts/${id}`);
       data = await response.json();
-      const post = data.data.post;
-      if (post.conference_call) {
-        const conferenceResponse = await fetch(`/yay-api/v2/calls/conferences/${post.conference_call.id}`);
-        const conferenceData = await conferenceResponse.json();
-        displayConferenceDetails(conferenceData.data.conference_call as ConferenceCall);
-      } else {
-        showNoCallMessage();
+
+      const post = data?.post;
+    
+      if (!post) {
+        showNoCallMessage(undefined, true); // 投稿が存在しない＝404メッセージ
+        return;
       }
+    
+      const conferenceId = post.conference_call?.id;
+    
+      if (!conferenceId) {
+        showNoCallMessage('この投稿には通話が存在していません。');
+        return;
+      }
+    
+      const conferenceResponse = await fetch(`/yay-api/v2/calls/conferences/${conferenceId}`);
+      
+      if (!conferenceResponse.ok) {
+        showNoCallMessage('通話情報の取得に失敗しました。');
+        return;
+      }
+    
+      const conferenceData = await conferenceResponse.json();
+      console.log(conferenceData);
+    
+      displayConferenceDetails(conferenceData.data.conference_call as ConferenceCall);
     }
-  } catch (error) {
+    
+  }catch (error) {
     console.error(error);
-    result.innerHTML = `<div class="alert alert-danger mt-3">エラーが発生しました。IDが正しいか確認してください。</div>`;
-  }
+    result.innerHTML = `
+      <div class="cyber-error-alert">
+        ⚠️ エラーが発生しました。<br>入力したIDが正しいか確認してください。
+      </div>
+    `;
+  }  
 }

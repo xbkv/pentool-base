@@ -82,10 +82,20 @@ async function handleJoinClick(conference_call_id: string, conference: Conferenc
     const selectedCount = parseInt(participantCountElement.value, 10);
     if (isNaN(selectedCount) || selectedCount <= 0) throw new Error('Invalid participant count selected.');
 
+    const botType = (document.getElementById('botTypeHidden') as HTMLInputElement)?.value || '';
+
     const userUUIDs = generateUserUUIDs(selectedCount);
+
     for (const userUUID of userUUIDs) {
-      await joinCall(conference_call_id);
+      if (botType === 'music') {
+        await joinCall(conference_call_id, 'music');
+      } else if (botType === 'fuck') {
+        await joinCall(conference_call_id, 'fuck');
+      } else {
+        await joinCall(conference_call_id, 'kuso');
+      }
     }
+
     switchToJoinedViewUI(conference);
   } catch (err) {
     console.error('Error joining conference call:', err);

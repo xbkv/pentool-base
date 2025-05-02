@@ -13,6 +13,7 @@ import joinedRouter from "./routes/joined";
 import yayApiRouter from "./routes/api/yay-api";
 import botApiRouter from "./routes/api/bot-api";
 import agoraApiRouter from './routes/api/agora-api';
+import musicApiRouter from './routes/api/sound-api';
 
 // dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -54,6 +55,7 @@ app.use("/joined", joinedRouter);
 app.use("/yay-api", yayApiRouter);
 app.use("/api/bot-api", botApiRouter);
 app.use("/api/agora-api", agoraApiRouter);
+app.use("/api/music-api", musicApiRouter);
 
 app.listen(PORT, () => {
     console.log(`http://localhost:${PORT}`);

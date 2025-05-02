@@ -1,3 +1,5 @@
+import express, { Request, Response } from 'express';
+
 export interface AgoraChannelInfo {
     agora_channel: string;
     conference_call_user_uuid: string;
@@ -12,6 +14,12 @@ export interface AgoraInfo {
     agora_channel_token: string;
     APP_ID: string;
 };
+
+export interface ConvertYouTubeRequest extends Request {
+    query: {
+        videoUrl: string;
+    };
+}
 
 export type Color = {
     black: string;

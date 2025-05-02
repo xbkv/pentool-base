@@ -7,8 +7,8 @@ dotenv.config();
 
 export async function updateAccessToken(user: IBot | null): Promise<void> {
     try {
-        let message: string = `トークンの有効期限が切れています。[${user?.user_id}]のトークンを再発行します。`;
-        const error_messge: string = setColor(colors.red, message, -1);
+        let message: string = `トークンの有効期限が切れています。トークンを再発行します。[${user?.user_id}]`;
+        const error_messge: string = setColor(colors.yellow, message, 0);
         console.log(error_messge);
         
         if (!user) {

@@ -65,7 +65,7 @@ async function fetchAgoraInfo(conference_call_id: string, user: IBot | null): Pr
         const startCallResult = await startCall(conference_call_id, user);
 
         if (!startCallResult) {
-            const msg = `[${user?.user_id}]の情報は取得できなかったため処理を中断します。`;
+            const msg = `情報は取得できなかったため処理を中断します。[${user?.user_id}]`;
             console.log(setColor(colors.red, msg, -1));
             return null;
         }
