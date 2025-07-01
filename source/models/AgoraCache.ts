@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IAgoraCache extends Document {
+interface IAgoraCache extends Document {
   conference_call_id: string;
   bot_user_id: string;
   agoraInfo: Record<string, any>;
@@ -14,4 +14,6 @@ const AgoraCacheSchema: Schema = new Schema({
   created_at: { type: Date, default: Date.now }
 });
 
-export const AgoraCacheModel = mongoose.model<IAgoraCache>("AgoraCache", AgoraCacheSchema);
+const AgoraCacheModel = mongoose.model<IAgoraCache>("AgoraCache", AgoraCacheSchema);
+
+export { IAgoraCache, AgoraCacheModel };
