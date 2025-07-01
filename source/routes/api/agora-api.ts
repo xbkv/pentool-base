@@ -9,6 +9,7 @@ router.get('/agora_info', async (req: Request, res: Response) => {
 
     if (typeof bot_id !== 'string' || typeof conference_call_id !== 'string') {
         const error = ERROR_MESSAGE.VALIDATION.invalidQueryParams.message;
+        console.error(`[Validation Error] bot_id or conference_call_id is missing or invalid.`, req.query);
         res
             .status(ERROR_MESSAGE.VALIDATION.invalidQueryParams.code || 400)
             .json({ result: RESULT_MESSAGE.ERROR, message: error });
@@ -16,33 +17,53 @@ router.get('/agora_info', async (req: Request, res: Response) => {
 
     try {
         const bot: IBot | null = await BotModel.findOne({ user_id: bot_id });
+
         if (!bot) {
             const error = ERROR_MESSAGE.NOT_FOUND.botNotFound.message;
+            console.error(`[Bot Not Found] user_id: ${bot_id}`);
             res
                 .status(ERROR_MESSAGE.NOT_FOUND.botNotFound.code || 404)
                 .json({ result: RESULT_MESSAGE.ERROR.message, message: error });
         }
 
         const agoraInfoArray = await participateInConferences(conference_call_id, [bot]);
-        if (agoraInfoArray.length > 0) {
-            const agoraInfo = agoraInfoArray[0];
-        
-            res.json({
-                agora_channel: agoraInfo.agora_channel,
-                agora_rtm_token: agoraInfo.agora_rtm_token,
-                conference_call_user_uuid: agoraInfo.conference_call_user_uuid,
-                agora_channel_token: agoraInfo.agora_channel_token,
-                APP_ID: agoraInfo.APP_ID
-            });
-        } else {
+
+        if (agoraInfoArray.length === 0) {
+            console.error(`[Agora Error] Failed to retrieve Agora info. user_id: ${bot_id}`);
             res.status(500).json({ error: 'Failed to retrieve Agora information.' });
         }
-    } catch (error) {
-        console.error(`Error fetching Agora info for botId ${bot_id}:`, error);
-        const fetchError = ERROR_MESSAGE.SERVER.fetchAgoraFailed.message;
-        res
-            .status(ERROR_MESSAGE.SERVER.fetchAgoraFailed.code || 500)
-            .json({ result: RESULT_MESSAGE.ERROR, message: fetchError });
+
+        const agoraInfoResult = agoraInfoArray[0];
+
+        if (
+            !agoraInfoResult ||
+            agoraInfoResult.success !== true ||
+            !agoraInfoResult.agoraInfo
+        ) {
+            console.error(`[Agora Error] Invalid or failed Agora info result. user_id: ${bot_id}`);
+            res.status(500).json({ error: 'Failed to retrieve Agora information.' });
+        }
+
+        const {
+            agora_channel,
+            conference_call_user_uuid,
+            agora_channel_token,
+            APP_ID,
+            agora_rtm_token
+        } = agoraInfoResult.agoraInfo;
+
+        res.json({
+            agora_channel,
+            agora_rtm_token,
+            conference_call_user_uuid,
+            agora_channel_token,
+            APP_ID
+        });
+
+    } catch (err) {
+        if (err.message === 'unjoinable_call') {
+            res.status(403).json({ error: "この通話にはBOTは参加できません。" });
+        }
     }
 });
 
