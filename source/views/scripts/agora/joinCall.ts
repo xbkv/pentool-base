@@ -10,7 +10,7 @@ import { initializeRtmChannel } from "./initializeRtmChannel";
 import { setupFuckBotUI } from "../ui/fuckBotUI";
 import { botStatusResponse } from "./types";
 import { playTrack, sendMessage, sendEmoji } from "../utils/agoraActions";
-import handleKusoMode from "./mode/kuso";
+import handleKusoMode from "./mode/beruma";
 
 // const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
 //     const loopRandomAudio = async () => {
