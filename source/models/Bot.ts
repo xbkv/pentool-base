@@ -22,4 +22,4 @@ const userSchema = new Schema({
 
 const BotModel = mongoose.model<IBot>(process.env.USER_DB_NAME, userSchema);
 
-export { IBot, BotModel };  1
+export { IBot, BotModel };
