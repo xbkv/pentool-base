@@ -205,7 +205,7 @@ export async function participateInConferences(
     });
     // console.log(cached)
     if (cached) {
-      console.log(setColor(colors.green, `キャッシュを再利用しました。 [${bot.user_id}]`, 1));
+      console.log(setColor(colors.green, `♻️キャッシュを再利用しました。 [${bot.user_id}]`, 1));
       results.push({ success: true, bot, agoraInfo: cached.agoraInfo });
       continue;
     }
