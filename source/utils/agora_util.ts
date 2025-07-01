@@ -1,33 +1,19 @@
 // import { HttpsProxyAgent } from "https-proxy-agent";
 // const proxyAgent = new HttpsProxyAgent(process.env.PROXY_URL);
 
-import { BotModel, IBot } from "../models/Bot";
+import { IBot, BotModel } from "../models/Bot";
+import { IAgoraCache, AgoraCacheModel } from "../models/AgoraCache"; 
+
 import { updateAccessToken } from "./token_util";
 import dotenv from 'dotenv';
 import { RESULT_MESSAGE } from "../routes/api/messages";
 import fetch from "node-fetch"
-import { AgoraChannelInfo, AgoraInfo, ErrorResponse, StartConferenceCallUrl } from "./types";
+import { AgoraChannelInfo, AgoraInfo, FetchAgoraResult, ParticipationResult, StartCallResult, StartConferenceCallUrl } from "./types";
 import { colors, setColor } from "./color_util";
 import { isErrorResponse } from "./util";
 import { ERROR_CODES } from '../constants/errorCodes';
 dotenv.config();
 
-type ParticipationResult = {
-  success: boolean;
-  bot?: IBot;
-  agoraInfo?: any;
-  reason?: string; 
-};
-
-type StartCallResult =
-  | AgoraChannelInfo
-  | { success: false; reason: string }
-  | null;
-
-type FetchAgoraResult =
-    | AgoraInfo
-    | { success: false; reason?: string }
-    | null;
 
 async function fetchAgoraRTMToken(conference_id: string, user: IBot): Promise<string> {
     try {
@@ -204,62 +190,102 @@ async function startCall(conference_call_id: string, user: IBot | null): Promise
     }
 }
 
-export async function participateInConferences(conference_call_id: any, bots: IBot[]): Promise<ParticipationResult[]> {
-    const blacklist = new Set<string>();
-    const results: ParticipationResult[] = [];
+export async function participateInConferences(
+  conference_call_id: any,
+  bots: IBot[]
+): Promise<ParticipationResult[]> {
+  const blacklist = new Set<string>();
+  const results: ParticipationResult[] = [];
 
-    for (const bot of bots) {
-        console.log(`[*] ボットの入室プロセスを実行します。 [${bot.user_id}]`);
+  for (const bot of bots) {
+    console.log(`[*] ボットの入室プロセスを実行します。 [${bot.user_id}]`);
 
-        const result: FetchAgoraResult = await fetchAgoraInfo(conference_call_id, bot);
-        // console.log(result);
+    const cached = await AgoraCacheModel.findOne({
+      conference_call_id,
+    });
+    // console.log(cached)
+    if (cached) {
+      console.log(setColor(colors.green, `キャッシュを再利用しました。 [${bot.user_id}]`, 1));
+      results.push({ success: true, bot, agoraInfo: cached.agoraInfo });
+      continue;
+    }
 
-        if (result && !("success" in result)) {
-            console.log(setColor(colors.green, `ボットの入室に成功しました。 [${bot.user_id}]`, 1));
-            results.push({ success: true, bot, agoraInfo: result });
-            continue;
+    const result: FetchAgoraResult = await fetchAgoraInfo(conference_call_id, bot);
+
+    if (result && !("success" in result)) {
+      console.log(setColor(colors.green, `ボットの入室に成功しました。 [${bot.user_id}]`, 1));
+
+      await AgoraCacheModel.updateOne(
+        { conference_call_id, bot_user_id: bot.user_id },
+        {
+          $set: {
+            conference_call_id,
+            bot_user_id: bot.user_id,
+            agoraInfo: result,
+            created_at: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+
+      results.push({ success: true, bot, agoraInfo: result });
+      continue;
+    }
+
+    if (result && "success" in result && result.success === false) {
+      console.log(setColor(colors.red, `BOTが参加できない通話のため処理を完全に中断します。[${bot.user_id}]`, -1));
+      throw new Error("unjoinable_call");
+    }
+
+    console.log(setColor(colors.red, `最初の入室に失敗しました。 [${bot.user_id}]`, -1));
+
+    // ✅ 再試行フェーズ
+    let attemptCount = 0;
+    const MAX_ATTEMPTS = 100;
+
+    while (attemptCount < MAX_ATTEMPTS) {
+      attemptCount++;
+      const availableBots = await BotModel.find();
+
+      for (const newBot of availableBots) {
+        if (!newBot.access_token || blacklist.has(newBot.user_id)) continue;
+
+        const retry: FetchAgoraResult = await fetchAgoraInfo(conference_call_id, newBot);
+
+        if (retry && !("success" in retry)) {
+          console.log(setColor(colors.green, `再試行でボットの入室に成功しました。 [${newBot.user_id}]`, 1));
+
+          await AgoraCacheModel.updateOne(
+            { conference_call_id, bot_user_id: newBot.user_id },
+            {
+              $set: {
+                conference_call_id,
+                bot_user_id: newBot.user_id,
+                agoraInfo: retry,
+                created_at: new Date(),
+              },
+            },
+            { upsert: true }
+          );
+
+          return [{ success: true, bot: newBot, agoraInfo: retry }];
         }
 
         if (result && "success" in result && result.success === false) {
-            console.log(setColor(colors.red, `BOTが参加できない通話のため処理を完全に中断します。[${bot.user_id}]`, -1));
-            throw new Error('unjoinable_call');
+          console.log(setColor(colors.red, `再試行中にBOTが入室拒否されました: [${newBot.user_id}]`, -1));
+          blacklist.add(newBot.user_id);
+          throw new Error("unjoinable_call");
         }
 
-        console.log(setColor(colors.red, `最初の入室に失敗しました。 [${bot.user_id}]`, -1));
+        console.log(setColor(colors.red, `再試行失敗: [${newBot.user_id}]`, -1));
+      }
 
-        let attemptCount = 0;
-        const MAX_ATTEMPTS = 100;
-
-        while (attemptCount < MAX_ATTEMPTS) {
-            attemptCount++;
-            const availableBots = await BotModel.find();
-
-            for (const newBot of availableBots) {
-                if (!newBot.access_token) continue;
-                if (blacklist.has(newBot.user_id)) continue;
-
-                const retry = await fetchAgoraInfo(conference_call_id, newBot);
-
-                if (retry && !("success" in retry)) {
-                    console.log(setColor(colors.green, `再試行でボットの入室に成功しました。 [${newBot.user_id}]`, 1));
-                    return [{ success: true, bot: newBot, agoraInfo: retry }];
-                }
-
-                if (retry && "success" in retry && retry.success === false) {
-                    console.log(setColor(colors.red, `BOTが参加できない通話のため処理を完全に中断します: [${newBot.user_id}]`, -1));
-                    blacklist.add(newBot.user_id);
-                    throw new Error('unjoinable_call');
-                }
-
-                console.log(setColor(colors.red, `再試行失敗: [${newBot.user_id}]`, -1));
-            }
-
-            await new Promise(res => setTimeout(res, 10));
-        }
-
-        console.log(setColor(colors.red, `全ての再試行に失敗しました。 [${bot.user_id}]`, -1));
-        results.push({ success: false, bot, reason: 'retry_failed' });
+      await new Promise(res => setTimeout(res, 10));
     }
 
-    return results;
+    console.log(setColor(colors.red, `全ての再試行に失敗しました。 [${bot.user_id}]`, -1));
+    results.push({ success: false, bot, reason: "retry_failed" });
+  }
+
+  return results;
 }
