@@ -1,0 +1,50 @@
+<div class="card call-detail-card neon-panel shadow-sm mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center border-bottom-0">
+    <h5 class="m-0 text-cyber">📞 通話詳細</h5>
+    <span class="badge bg-cyber-secondary">
+      参加数: <%= conference.conference_call_users_count %> / <%= conference.max_participants %>
+    </span>
+  </div>
+
+  <div class="card-body">
+    <p class="mb-3 text-cyber"><strong>ID:</strong> <%= conference.id %></p>
+
+    <h6 class="mb-2 text-cyber">👥 参加者一覧</h6>
+    <div class="user-list">
+      <% conference.conference_call_users.forEach(user => { %>
+        <div class="participant-item">
+          <img src="<%= user.profile_icon_thumbnail %>" class="participant-avatar" alt="<%= user.nickname %>">
+          <div class="participant-info">
+            <span class="text-truncate text-white fw-semibold"><%= user.nickname %></span>
+            <% const role = conference.conference_call_user_roles.find(r => r.user_id === user.id)?.role; %>
+            <% if (role === 'host') { %>
+              <span class="badge bg-pink">枠主</span>
+            <% } else if (role === 'moderator') { %>
+              <span class="badge bg-blue">サブ枠主</span>
+            <% } %>
+          </div>
+          <% const isOnline = user.online_status === 'online'; %>
+          <span class="badge <%= isOnline ? 'bg-green' : 'bg-gray' %>">
+            <%= isOnline ? 'オンライン' : 'オフライン' %>
+          </span>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- BOT人数選択 -->
+    <div class="mt-3">
+      <label for="participantCount" class="form-label text-cyber">BOT参加人数</label>
+      <select id="participantCount" class="form-select neon-select w-100">
+        <% for (let i = 1; i <= conference.max_participants - conference.conference_call_users_count; i++) { %>
+          <option value="<%= i %>"><%= i %> 人</option>
+        <% } %>
+      </select>
+    </div>
+
+    <div class="mt-4 text-end">
+      <button class="btn btn-success btn-cyber px-4" id="joinButton">
+        <i class="fas fa-user-plus me-1"></i> 参加する
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+dist/
+node_modules/
+.env
+/release
+error_log.txt
+yarn.lock
+source/views/assets/audio/
