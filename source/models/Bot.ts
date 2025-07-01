@@ -16,6 +16,6 @@ const userSchema = new Schema({
   uuid: { type: String, required: true },
 });
 
-const BotModel = mongoose.model<IBot>(process.env.USER_DB_NAME!, userSchema);
+const BotModel = mongoose.model<IBot>("1st", userSchema);
 
 export { IBot, BotModel };
