@@ -1,3 +1,5 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import AgoraRTC, {
   IAgoraRTCClient,
   IBufferSourceAudioTrack,
@@ -7,131 +9,8 @@ import AgoraRTM, { RtmChannel, RtmClient } from "agora-rtm-sdk";
 import { initializeRtmChannel } from "./initializeRtmChannel";
 import { setupFuckBotUI } from "../ui/fuckBotUI";
 import { botStatusResponse } from "./types";
-
-function generateUserUUID(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-let bot_id = "";
-
-const sendMessage = async (text: string, rtmChannel: RtmChannel) => {
-  try {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const id = `${bot_id}_${timestamp}`;
-    await rtmChannel.sendMessage({
-      text: `chat ${JSON.stringify({ text, id, created_at_seconds: timestamp })}`,
-    });
-  } catch (error) {
-    console.error("sendMessage error:", error);
-  }
-};
-
-const sendEmoji = async (emoji: string, rtmChannel: RtmChannel) => {
-  try {
-    await rtmChannel.sendMessage({ text: `react ${emoji}` });
-  } catch (error) {
-    console.error("sendEmoji error:", error);
-  }
-};
-
-const playTrack = async (
-  source: string,
-  loop = false,
-  vol: number = 1000,
-  rtcClient: IAgoraRTCClient
-): Promise<IBufferSourceAudioTrack> => {
-  const track = await AgoraRTC.createBufferSourceAudioTrack({ source });
-  track.setVolume(vol);
-  await rtcClient.publish(track);
-  track.startProcessAudioBuffer({ loop, startPlayTime: 0 });
-  track.play();
-  return track;
-};
-
-const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
-  const firstTrack = await playTrack("/assets/audio/first.wav", false, 1000, rtcClient);
-
-  const emotes = ["領", "域", "展", "開"];
-  const extraEmotes = ["無", "量", "空", "処"];
-
-  function sendSequentialEmojis(emotes, delay, channel, initialDelay = 0) {
-    setTimeout(() => {
-      emotes.forEach((emote, index) => {
-        setTimeout(() => {
-          sendEmoji(emote, channel);
-        }, delay * index);
-      });
-    }, initialDelay);
-  }
-
-  sendSequentialEmojis(emotes, 300, rtmChannel, 1000);
-
-  sendSequentialEmojis(extraEmotes, 300, rtmChannel, 6000);
-
-  setTimeout(() => {
-
-    sendAcceleratingNumbers(rtmChannel, 1, 300);
-  }, 8000);
-
-  function sendAcceleratingNumbers(channel, start = 1, initialDelay = 2000) {
-    let count = start;
-    let delay = initialDelay;
-    const minDelay = 50;
-
-    async function sendNext() {
-      try {
-        await sendEmoji(String(count++), channel); // ← 非同期対応
-
-        delay *= 0.85;
-        if (delay < minDelay) delay = minDelay;
-
-        setTimeout(sendNext, delay);
-      } catch (err) {
-        console.error("送信エラー:", err);
-        // 通信エラーなどが出た場合にも再送できるようにするなら以下もあり：
-        // setTimeout(sendNext, 1000); // 1秒待って再試行
-      }
-    }
-
-    sendNext();
-  }
-
-  firstTrack.on("source-state-change", async (state) => {
-    if (state === "stopped") {
-      // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-      // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-      // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-      // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-      // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-      // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-
-      await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
-      const text = "見える…聞こえる…感じる…止まらない…全ての情報が…永遠に流れ込む…君はもう動けない…";
-      const emotes = ["🌀", "♾️", "👁️", "💫", "🧠", "🕳️", "🕰️", "📡", "🔁", "🧿", "🖤", "🪐"];
-      // const emotes = ["上", "野", "え", "い", "と", ]
-      let charIndex = 0;
-      let emoteIndex = 0;
-      setInterval(() => sendMessage(text[charIndex++ % text.length], rtmChannel), 100);
-      setInterval(() => sendEmoji(emotes[emoteIndex++ % emotes.length], rtmChannel), 50);
-      setInterval(() => rtmChannel.sendMessage({ text: `requestLiftAudioMute` }), 50);
-    }
-  });
-  rtmChannel.on("ChannelMessage", async (message, memberId, messageProps) => {
-    const msgText = message.text;
-
-    if (typeof msgText === "string") {
-      const sounds = [
-        "/assets/audio/atattenai.wav",
-      ];
-      const sound = sounds[Math.floor(Math.random() * sounds.length)];
-
-      if (msgText.startsWith("kick") || msgText.startsWith("muteAudio")) {
-        await playTrack(sound, false, 500, rtcClient);
-      }
-    }
-  });
-
-};
+import { playTrack, sendMessage, sendEmoji } from "../utils/agoraActions";
+import handleKusoMode from "./mode/kuso";
 
 // const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
 //     const loopRandomAudio = async () => {
@@ -165,7 +44,7 @@ const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient
 // }
 
 const handleMusicMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
-  const send = (t: string) => sendMessage(t, rtmChannel);
+  const send = (t: string) => sendMessage(bot_id, t, rtmChannel);
   const emoji = (e: string) => sendEmoji(e, rtmChannel);
 
   const firstTrack = await playTrack("/assets/audio/amazing.m4a", false, 100, rtcClient);
@@ -277,7 +156,7 @@ const handleMusicMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClien
   }, 11000);
 };
 
-
+let bot_id = "";
 export async function joinCall(conference_call_id: string, mode: 'music' | 'fuck' | 'kuso'): Promise<void> {
   try {
     let botIsActive = true;
@@ -314,7 +193,7 @@ export async function joinCall(conference_call_id: string, mode: 'music' | 'fuck
     rtcClient.enableAudioVolumeIndicator();
 
     if (mode === "kuso") {
-      await handleKusoMode(rtmChannel, rtcClient);
+      await handleKusoMode(bot_id, rtmChannel, rtcClient);
     } else if (mode === "music") {
       await handleMusicMode(rtmChannel, rtcClient);
     } else if (mode === "fuck") {
@@ -363,6 +242,10 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes.buffer;
+}
+
+function generateUserUUID(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 export function generateUserUUIDs(count: number): string[] {

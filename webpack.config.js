@@ -76,6 +76,7 @@ module.exports = {
     splitChunks: false,
     runtimeChunk: false,
   },
+  
   devServer: {
     static: {
       directory: path.resolve(__dirname, 'dist/public'),

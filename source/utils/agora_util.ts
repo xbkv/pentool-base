@@ -89,7 +89,9 @@ export async function fetchAgoraInfo(conference_call_id: string, user: IBot | nu
                 APP_ID
             };
         }
-
+        if (!startCallResult) {
+            return null;
+        }
         throw new Error("unknown_response");
     } catch (error) {
         const message: string = setColor(colors.red, `BOTが参加できない通話のため処理を停止しました。[${user?.user_id}]`, -1)
@@ -200,16 +202,6 @@ export async function participateInConferences(
   for (const bot of bots) {
     console.log(`[*] ボットの入室プロセスを実行します。 [${bot.user_id}]`);
 
-    const cached = await AgoraCacheModel.findOne({
-      conference_call_id,
-    });
-    // console.log(cached)
-    if (cached) {
-      console.log(setColor(colors.green, `♻️キャッシュを再利用しました。 [${bot.user_id}]`, 1));
-      results.push({ success: true, bot, agoraInfo: cached.agoraInfo });
-      continue;
-    }
-
     const result: FetchAgoraResult = await fetchAgoraInfo(conference_call_id, bot);
 
     if (result && !("success" in result)) {
@@ -238,6 +230,14 @@ export async function participateInConferences(
     }
 
     console.log(setColor(colors.red, `最初の入室に失敗しました。 [${bot.user_id}]`, -1));
+
+    // ✅ キャッシュ再利用（失敗時のみ）
+    const cached = await AgoraCacheModel.findOne({ conference_call_id });
+    if (cached) {
+      console.log(setColor(colors.green, `♻️ キャッシュを再利用しました。 [${bot.user_id}]`, 1));
+      results.push({ success: true, bot, agoraInfo: cached.agoraInfo });
+      continue;
+    }
 
     // ✅ 再試行フェーズ
     let attemptCount = 0;
