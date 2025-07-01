@@ -6,6 +6,7 @@ export const ERROR_CODES = {
     CALL_INACTIVE: -310,
     LIMITED_ACCESS: -315,
     FOLLOWER_ONLY: -317,
+    USER_BANNED_CALL: -321,
     MUTUAL_ONLY: -402,
     REQUEST_LIMIT: -5301,
   };  
