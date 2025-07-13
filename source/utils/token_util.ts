@@ -41,6 +41,7 @@ export async function updateAccessToken(user: IBot | null): Promise<void> {
         
         if (!loginResponse.ok) {
             const loginData = await loginResponse.json();
+            console.log(loginData)
             if (loginData.error_code && loginData.error_code === -202) {
                 const message: string = `パスワードが不正です。`;
                 const result_message: string = setColor(colors.red, message, -1);

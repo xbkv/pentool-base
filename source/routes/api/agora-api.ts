@@ -51,7 +51,7 @@ router.get('/agora_info', async (req: Request, res: Response) => {
             APP_ID,
             agora_rtm_token
         } = agoraInfoResult.agoraInfo;
-
+        console.log(agoraInfoResult)
         res.json({
             agora_channel,
             agora_rtm_token,

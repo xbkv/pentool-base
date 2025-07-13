@@ -16,6 +16,6 @@ const userSchema = new Schema({
   uuid: { type: String, required: true },
 });
 
-const BotModel = mongoose.model<IBot>("1st", userSchema);
+const BotModel = mongoose.model<IBot>("beruma", userSchema);
 
 export { IBot, BotModel };

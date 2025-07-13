@@ -65,7 +65,7 @@ export async function fetchAgoraInfo(conference_call_id: string, user: IBot | nu
         }
 
         const startCallResult = await startCall(conference_call_id, user);
-
+        // console.log(startCallResult)
         if (startCallResult && "success" in startCallResult && !startCallResult.success) {
             console.log(setColor(colors.red, `通話開始に失敗しました。[${user?.user_id}]`, -1));
             throw new Error("unjoinable_call"); // ← 明確にエラーをスロー
@@ -95,11 +95,10 @@ export async function fetchAgoraInfo(conference_call_id: string, user: IBot | nu
         throw new Error("unknown_response");
     } catch (error) {
         const message: string = setColor(colors.red, `BOTが参加できない通話のため処理を停止しました。[${user?.user_id}]`, -1)
-        console.log(message);
+        console.log(message, error);
         throw error;
     }
 }
-
 
 async function startCall(conference_call_id: string, user: IBot | null): Promise<StartCallResult> {
     try {
@@ -167,7 +166,7 @@ async function startCall(conference_call_id: string, user: IBot | null): Promise
                 return { success: false, reason: "call_inactive" };
 
             } else if (code === ERROR_CODES.REQUEST_LIMIT) {
-                console.log(setColor(colors.red, "リクエスト制限に達しました。時間がたってからやり直してください。", -1));
+                console.log(setColor(colors.red, "リクエスト制限に達しました。しばらくしてからやり直してください。", -1));
                 return { success: false, reason: "request_limit" };
 
             } else {
@@ -177,6 +176,7 @@ async function startCall(conference_call_id: string, user: IBot | null): Promise
         }
 
         const conference = data.conference_call;
+        // console.log(conference)
         if (!conference) {
             throw new Error('conference_call data is missing');
         }
@@ -207,18 +207,18 @@ export async function participateInConferences(
     if (result && !("success" in result)) {
       console.log(setColor(colors.green, `ボットの入室に成功しました。 [${bot.user_id}]`, 1));
 
-      await AgoraCacheModel.updateOne(
-        { conference_call_id, bot_user_id: bot.user_id },
-        {
-          $set: {
-            conference_call_id,
-            bot_user_id: bot.user_id,
-            agoraInfo: result,
-            created_at: new Date(),
-          },
-        },
-        { upsert: true }
-      );
+    //   await AgoraCacheModel.updateOne(
+    //     { conference_call_id, bot_user_id: bot.user_id },
+    //     {
+    //       $set: {
+    //         conference_call_id,
+    //         bot_user_id: bot.user_id,
+    //         agoraInfo: result,
+    //         created_at: new Date(),
+    //       },
+    //     },
+    //     { upsert: true }
+    //   );
 
       results.push({ success: true, bot, agoraInfo: result });
       continue;
@@ -231,13 +231,12 @@ export async function participateInConferences(
 
     console.log(setColor(colors.red, `最初の入室に失敗しました。 [${bot.user_id}]`, -1));
 
-    // ✅ キャッシュ再利用（失敗時のみ）
-    const cached = await AgoraCacheModel.findOne({ conference_call_id });
-    if (cached) {
-      console.log(setColor(colors.green, `♻️ キャッシュを再利用しました。 [${bot.user_id}]`, 1));
-      results.push({ success: true, bot, agoraInfo: cached.agoraInfo });
-      continue;
-    }
+    // const cached = await AgoraCacheModel.findOne({ conference_call_id });
+    // if (cached) {
+    //   console.log(setColor(colors.green, `♻️ キャッシュを再利用しました。 [${bot.user_id}]`, 1));
+    //   results.push({ success: true, bot, agoraInfo: cached.agoraInfo });
+    //   continue;
+    // }
 
     // ✅ 再試行フェーズ
     let attemptCount = 0;

@@ -1,5 +1,3 @@
-import path from "path";
-import { fileURLToPath } from "url";
 import AgoraRTC, {
   IAgoraRTCClient,
   IBufferSourceAudioTrack,
@@ -11,6 +9,8 @@ import { setupFuckBotUI } from "../ui/fuckBotUI";
 import { botStatusResponse } from "./types";
 import { playTrack, sendMessage, sendEmoji } from "../utils/agoraActions";
 import handleKusoMode from "./mode/beruma";
+
+let bot_id = "";
 
 // const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
 //     const loopRandomAudio = async () => {
@@ -47,9 +47,9 @@ const handleMusicMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClien
   const send = (t: string) => sendMessage(bot_id, t, rtmChannel);
   const emoji = (e: string) => sendEmoji(e, rtmChannel);
 
-  const firstTrack = await playTrack("/assets/audio/amazing.m4a", false, 100, rtcClient);
+  const firstTrack = await playTrack("/assets/audio/rinapen/amazing.m4a", false, 100, rtcClient);
   firstTrack.on("source-state-change", async () => {
-    await playTrack("/assets/audio/everyday.m4a", true, 100, rtcClient);
+    await playTrack("/assets/audio/rinapen/everyday.m4a", true, 100, rtcClient);
   });
 
   setTimeout(async () => {
@@ -156,7 +156,6 @@ const handleMusicMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClien
   }, 11000);
 };
 
-let bot_id = "";
 export async function joinCall(conference_call_id: string, mode: 'music' | 'fuck' | 'kuso'): Promise<void> {
   try {
     let botIsActive = true;

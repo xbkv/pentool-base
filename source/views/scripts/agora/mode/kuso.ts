@@ -7,7 +7,7 @@ import { RtmChannel } from "agora-rtm-sdk";
 import { playTrack, sendEmoji, sendMessage } from "../../utils/agoraActions";
 
 export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient){
-  const firstTrack = await playTrack("/assets/audio/first.wav", false, 1000, rtcClient);
+  const firstTrack = await playTrack("/assets/audio/rinapen/first.wav", false, 1000, rtcClient);
 
   const emotes = ["領", "域", "展", "開"];
   const extraEmotes = ["無", "量", "空", "処"];
@@ -38,7 +38,12 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
 
     async function sendNext() {
       try {
-        await sendEmoji(String(count++), channel);
+        const digits = String(count++);
+        
+        // 1文字ずつ順番に送信（awaitで順に送る）
+        for (const char of digits) {
+          await sendEmoji(char, channel);
+        }
 
         delay *= 0.85;
         if (delay < minDelay) delay = minDelay;
@@ -46,13 +51,13 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
         setTimeout(sendNext, delay);
       } catch (err) {
         console.error("送信エラー:", err);
-        // 通信エラーなどが出た場合にも再送できるようにするなら以下もあり：
-        // setTimeout(sendNext, 1000); // 1秒待って再試行
+        // setTimeout(sendNext, 1000); // 必要なら再送ロジック
       }
     }
 
     sendNext();
   }
+
 
   firstTrack.on("source-state-change", async (state) => {
     if (state === "stopped") {
@@ -63,7 +68,7 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
       // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
       // await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
 
-      await playTrack("/assets/audio/second.wav", true, 1000, rtcClient);
+      await playTrack("/assets/audio/rinapen/second.wav", true, 1000, rtcClient);
       const text = "見える…聞こえる…感じる…止まらない…全ての情報が…永遠に流れ込む…君はもう動けない…";
       const emotes = ["🌀", "♾️", "👁️", "💫", "🧠", "🕳️", "🕰️", "📡", "🔁", "🧿", "🖤", "🪐"];
       // const emotes = ["上", "野", "え", "い", "と", ]
@@ -79,7 +84,7 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
 
     if (typeof msgText === "string") {
       const sounds = [
-        "/assets/audio/atattenai.wav",
+        "/assets/audio/rinapen/atattenai.wav",
       ];
       const sound = sounds[Math.floor(Math.random() * sounds.length)];
 

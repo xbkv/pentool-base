@@ -12,9 +12,9 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
     firstTrack.on("source-state-change", async (state) => {
         if (state === "stopped") {
         // 🔁 second.wav をループで再生
-        await playTrack("/assets/audio/beruma/second.wav", true, 1000, rtcClient);
+        await playTrack("/assets/audio/beruma/second.m4a", true, 1000, rtcClient);
 
-        const emotes = ["🧑‍🦽", "موتوا", "أيها", "الأوغاد", "🦽", "🦯", "🩼", "🦼"];
+        const emotes = ["🦽", "🦯", "🦼"];
         const text = "話をしねえじゃねえか！ふざけんなよ！";
         // const emotes = ["上", "野", "え", "い", "と", ]
         let charIndex = 0;
