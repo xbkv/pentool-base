@@ -1,4 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 interface IBot extends Document {
   user_id: string;
@@ -16,6 +19,6 @@ const userSchema = new Schema({
   uuid: { type: String, required: true },
 });
 
-const BotModel = mongoose.model<IBot>("beruma", userSchema);
+const BotModel = mongoose.model<IBot>(process.env.DB_USER, userSchema);
 
 export { IBot, BotModel };
