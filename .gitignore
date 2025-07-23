@@ -1,6 +1,6 @@
 dist/
 node_modules/
-.env
+# .env
 /release
 error_log.txt
 yarn.lock
