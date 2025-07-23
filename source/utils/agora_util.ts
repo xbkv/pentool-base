@@ -12,8 +12,8 @@ import { AgoraChannelInfo, AgoraInfo, FetchAgoraResult, ParticipationResult, Sta
 import { colors, setColor } from "./color_util";
 import { isErrorResponse } from "./util";
 import { ERROR_CODES } from '../constants/errorCodes';
-dotenv.config();
 
+dotenv.config();
 
 async function fetchAgoraRTMToken(conference_id: string, user: IBot): Promise<string> {
     try {
@@ -68,7 +68,7 @@ export async function fetchAgoraInfo(conference_call_id: string, user: IBot | nu
         // console.log(startCallResult)
         if (startCallResult && "success" in startCallResult && !startCallResult.success) {
             console.log(setColor(colors.red, `通話開始に失敗しました。[${user?.user_id}]`, -1));
-            throw new Error("unjoinable_call"); // ← 明確にエラーをスロー
+            throw new Error("unjoinable_call"); 
         }
 
         if (startCallResult && !("success" in startCallResult)) {
@@ -95,7 +95,7 @@ export async function fetchAgoraInfo(conference_call_id: string, user: IBot | nu
         throw new Error("unknown_response");
     } catch (error) {
         const message: string = setColor(colors.red, `BOTが参加できない通話のため処理を停止しました。[${user?.user_id}]`, -1)
-        console.log(message, error);
+        console.log(message);
         throw error;
     }
 }

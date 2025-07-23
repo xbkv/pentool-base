@@ -15,7 +15,8 @@
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    
   },
-"include": ["source/**/*.ts", "a.ts"],
+"include": ["source/**/*.ts", "a.ts", "exportCredentials.ts"],
 "exclude": ["node_modules", "dist", "source/views/**/*"]
 }

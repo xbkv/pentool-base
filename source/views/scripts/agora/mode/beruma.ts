@@ -7,12 +7,12 @@ import { RtmChannel } from "agora-rtm-sdk";
 import { playTrack, sendEmoji, sendMessage } from "../../utils/agoraActions";
 
 export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
-  const firstTrack = await playTrack("/assets/audio/beruma/first.wav", false, 1000, rtcClient);
+  const firstTrack = await playTrack("/assets/audio/users/beruma/first.wav", false, 1000, rtcClient);
 
     firstTrack.on("source-state-change", async (state) => {
         if (state === "stopped") {
         // 🔁 second.wav をループで再生
-        await playTrack("/assets/audio/beruma/second.m4a", true, 1000, rtcClient);
+        await playTrack("/assets/audio/users/beruma/second.m4a", true, 1000, rtcClient);
 
         const emotes = ["🦽", "🦯", "🦼"];
         const text = "話をしねえじゃねえか！ふざけんなよ！";
@@ -35,7 +35,7 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
     const msgText = message.text;
     if (typeof msgText === "string") {
       const sounds = [
-        "/assets/audio/scream.wav",
+        "/assets/audio/kick/scream.wav",
       ];
       const sound = sounds[Math.floor(Math.random() * sounds.length)];
       if (msgText.startsWith("kick") || msgText.startsWith("muteAudio")) {
