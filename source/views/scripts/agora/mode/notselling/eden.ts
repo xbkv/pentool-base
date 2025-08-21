@@ -1,16 +1,13 @@
-import { sendEmoji, sendMessage } from "../../utils/agoraActions";
-import { playTrack } from "../../utils/agoraActions";
+import { sendEmoji, sendMessage } from "../../../utils/agoraActions";
+import { playTrack } from "../../../utils/agoraActions";
 import { RtmChannel } from "agora-rtm-sdk";
 import { IAgoraRTCClient } from "agora-rtc-sdk-ng";
 
-export const handleEdenMode = async (bot_id: string, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
+export const edenMain = async (bot_id: string, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
     const send = (t: string) => sendMessage(bot_id, t, rtmChannel);
     const emoji = (e: string) => sendEmoji(e, rtmChannel);
   
     const firstTrack = await playTrack("/assets/audio/eden/first.wav", false, 100, rtcClient);
-    // firstTrack.on("source-state-change", async () => {
-    //   await playTrack("/assets/audio/eden/eden.m4a", true, 100, rtcClient);
-    // });
   
     setTimeout(async () => {
     for (let i = 0; i < 30; i++) {

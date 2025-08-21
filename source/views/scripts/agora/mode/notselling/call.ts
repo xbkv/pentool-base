@@ -4,9 +4,9 @@ import AgoraRTC, {
   IMicrophoneAudioTrack,
 } from "agora-rtc-sdk-ng";
 import { RtmChannel } from "agora-rtm-sdk";
-import { playTrack, sendEmoji, sendMessage } from "../../utils/agoraActions";
+import { playTrack, sendEmoji, sendMessage } from "../../../utils/agoraActions";
 
-export async function handleCallMode(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
+export async function callMain(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
   // 先に call.wav を再生しながらクラブ絵文字送信
   const callTrack = await playTrack("/assets/audio/call/call.wav", false, 200, rtcClient);
 

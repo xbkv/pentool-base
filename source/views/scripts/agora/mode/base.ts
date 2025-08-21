@@ -6,12 +6,12 @@ import AgoraRTC, {
 import { RtmChannel } from "agora-rtm-sdk";
 import { playTrack, sendEmoji, sendMessage } from "../../utils/agoraActions";
 
-export async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient){
+export async function baseMain(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient){
   const firstTrack = await playTrack("/assets/audio/users/rinapen/first.wav", false, 1000, rtcClient);
 
   const emotes = ["領", "域", "展", "開"];
-  const extraEmotes = ["無", "量", "空", "処"];
-
+  // const extraEmotes = ["無", "量", "空", "処"];
+  const extraEmotes = ["鼻", "巨", "大", "🐷", "み", "ゃ", "お","し","ま"];
   function sendSequentialEmojis(emotes, delay, channel, initialDelay = 0) {
     setTimeout(() => {
       emotes.forEach((emote, index) => {

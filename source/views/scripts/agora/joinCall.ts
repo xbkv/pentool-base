@@ -3,43 +3,14 @@ import AgoraRTM, { RtmClient, RtmChannel } from "agora-rtm-sdk";
 import { initializeRtmChannel } from "./initializeRtmChannel";
 import { setupFuckBotUI } from "../ui/fuckBotUI";
 import { botStatusResponse } from "./types";
-import { handleKusoMode, handleMusicMode } from "./mode/kuso";
-import { handleCallMode } from "./mode/call";
-import { playTrack } from "../utils/agoraActions";
-import { handleFlyMode } from "./mode/fly";
-import { handleEdenMode } from "./mode/eden";
-// const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
-//     const loopRandomAudio = async () => {
-//       const sounds = [
-//         "/assets/audio/gaiaku/dareyanen.wav",
-//         "/assets/audio/gaiaku/sine.wav",
-//         "/assets/audio/gaiaku/mazidedareyanen.wav"
-//       ];
-//       while (true) {
-//         const delay = Math.random() * (60000 - 1000) + 1000; // 1秒〜3分
-//         const sound = sounds[Math.floor(Math.random() * sounds.length)];
-//         await new Promise(res => setTimeout(res, delay));
-//         await playTrack(sound, false, 1000, rtcClient);
-//       }
-//     };
-//     loopRandomAudio();
+import { baseMain } from "./mode/base";
+import { edenMain } from "./mode/notselling/eden";
 
-//   rtmChannel.on("ChannelMessage", async (message, memberId, messageProps) => {
-//     if ("text" in message && typeof message.text === "string") {
-//       const msgText = message.text;
-//             const sounds = [
-//         "/assets/audio/gaiaku/sine.wav",
-//         "/assets/audio/gaiaku/yamee.wav"
-//       ];
-//       const sound = sounds[Math.floor(Math.random() * sounds.length)];
-//       if (msgText.startsWith("kick") || msgText.startsWith("muteAudio")) {
-//         await playTrack(sound, false, 1000, rtcClient);
-//       }
-//     }
-//   });
-// }
-
-export async function joinCall(conferenceCallId: string, mode: 'music' | 'fuck' | 'kuso'): Promise<void> {
+export async function joinCall(conferenceCallId: string | null | undefined, mode: 'music' | 'fuck' | 'kuso'): Promise<void> {
+  if (!conferenceCallId) {
+    console.error("❌ Conference call ID is required");
+    return;
+  }
   try {
     let botId: string;
     while (true) {
@@ -56,7 +27,7 @@ export async function joinCall(conferenceCallId: string, mode: 'music' | 'fuck' 
         break;
       }
 
-      await new Promise(res => setTimeout(res, 10));
+      await new Promise(res => setTimeout(res, 100)); // 100ms待機に変更（10msは短すぎる）
     }
 
     const agoraInfoRes = await fetch(`/api/agora-api/agora_info?bot_id=${botId}&conference_call_id=${conferenceCallId}`);
@@ -79,13 +50,9 @@ export async function joinCall(conferenceCallId: string, mode: 'music' | 'fuck' 
     rtcClient.enableAudioVolumeIndicator();
 
     if (mode === "kuso") {
-      await handleKusoMode(botId, rtmChannel, rtcClient);
-      // await handleCallMode(botId, rtmChannel, rtcClient);
+      await baseMain(botId, rtmChannel, rtcClient);
     } else if (mode === "music") {
-      // await handleCallMode(botId, rtmChannel, rtcClient);
-      // await handleMusicMode(botId, rtmChannel, rtcClient);
-      await handleEdenMode(botId, rtmChannel, rtcClient);
-      // await handleFlyMode(botId, rtmChannel, rtcClient);
+      await edenMain(botId, rtmChannel, rtcClient);
     } else if (mode === "fuck") {
       setupFuckBotUI(rtcClient, rtmChannel, conferenceCallId, botId);
       const localTrack: IMicrophoneAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
@@ -101,13 +68,6 @@ export async function joinCall(conferenceCallId: string, mode: 'music' | 'fuck' 
 
     rtcClient.on("user-unpublished", (user) => {
       if (user.audioTrack) user.audioTrack.stop();
-    });
-
-    rtcClient.on("volume-indicator", (volumes) => {
-      volumes.forEach(vol => {
-        const el = document.querySelector(`#user-${vol.uid} .mic-icon`);
-        if (el) el.classList.toggle("muted", vol.level < 5);
-      });
     });
 
     initializeRtmChannel(rtmClient, rtmChannel, botId);

@@ -1,4 +1,4 @@
-import { ERROR_CODES } from "../constants/errorCodes";
+import { ERROR_CODES } from "../constants/errors";
 import { BotModel, IBot } from "../models/Bot";
 import { updateAccessToken } from "./token_util";
 import dotenv from 'dotenv';
@@ -7,8 +7,18 @@ dotenv.config();
 
 export async function getRandomBotId(): Promise<string> {
     const count: number = await BotModel.countDocuments();
+    
+    if (count === 0) {
+        throw new Error('No bots found in database');
+    }
+    
     const randomSkip: number = Math.floor(Math.random() * count);
     const randomBot: IBot = await BotModel.findOne().skip(randomSkip);
+    
+    if (!randomBot) {
+        throw new Error('Failed to retrieve random bot');
+    }
+    
     return randomBot.user_id;
 }
 

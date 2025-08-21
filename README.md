@@ -47,10 +47,36 @@ npm test
 npm run build
 ```
 
+## 環境設定
+
+### プロキシ設定
+
+プロキシを使用する場合は、`.env`ファイルに`PROXY_URL`を設定してください：
+
+```bash
+# .env ファイル
+PROXY_URL=http://proxy.example.com:8080
+```
+
+プロキシが設定されていない場合は、直接接続が使用されます。
+
+### その他の環境変数
+
+```bash
+# 必須
+PORT=3000
+YAY_HOST=https://api.yay.space
+USER_AGENT=YourApp/1.0
+
+# オプション
+PROXY_URL=http://proxy.example.com:8080
+```
+
 ## 注意事項
 
 - コマンドを実行する前に、必ずプロジェクトのルートディレクトリにいることを確認してください。
 - Node.jsのバージョンは`16.x`以上を推奨します。
+- プロキシ設定は自動的に検出され、有効/無効がログに表示されます。
 
 ## ライセンス
 

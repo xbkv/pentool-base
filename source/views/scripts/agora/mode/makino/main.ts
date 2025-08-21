@@ -4,9 +4,9 @@ import AgoraRTC, {
   IMicrophoneAudioTrack,
 } from "agora-rtc-sdk-ng";
 import { RtmChannel } from "agora-rtm-sdk";
-import { playTrack, sendEmoji, sendMessage } from "../../utils/agoraActions";
+import { playTrack, sendEmoji, sendMessage } from "../../../utils/agoraActions";
 
-export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
+export default async function makinoMain(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
     await playTrack("/assets/audio/users/makino/first.m4a", true, 1000, rtcClient);
 
     const emotes = ["ま", "き", "の", "様", "最", "強"];

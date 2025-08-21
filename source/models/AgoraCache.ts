@@ -1,4 +1,3 @@
-
 import mongoose, { Schema, Document } from "mongoose";
 
 interface IAgoraCache extends Document {

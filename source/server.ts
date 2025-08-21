@@ -15,6 +15,7 @@ import botApiRouter from "./routes/api/bot-api";
 import agoraApiRouter from './routes/api/agora-api';
 import musicApiRouter from './routes/api/sound-api';
 import { connectDB } from "./lib/mongodb";
+import { logProxyStatus } from "./utils/proxyConfig";
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -58,7 +59,8 @@ app.use("/api/agora-api", agoraApiRouter);
 app.use("/api/music-api", musicApiRouter);
 
 app.listen(PORT, () => {
-    console.log(`http://localhost:${PORT}`);
+    console.log(`🚀 サーバー起動: http://localhost:${PORT}`);
+    logProxyStatus();
 });
 
 (async () => {

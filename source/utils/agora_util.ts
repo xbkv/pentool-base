@@ -11,7 +11,7 @@ import fetch from "node-fetch"
 import { AgoraChannelInfo, AgoraInfo, FetchAgoraResult, ParticipationResult, StartCallResult, StartConferenceCallUrl } from "./types";
 import { colors, setColor } from "./color_util";
 import { isErrorResponse } from "./util";
-import { ERROR_CODES } from '../constants/errorCodes';
+import { ERROR_CODES } from '../constants/errors';
 import { UnverifiedBotModel } from "../models/UnverifiedBot"; 
 
 dotenv.config();

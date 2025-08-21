@@ -4,9 +4,9 @@ import AgoraRTC, {
   IMicrophoneAudioTrack,
 } from "agora-rtc-sdk-ng";
 import { RtmChannel } from "agora-rtm-sdk";
-import { playTrack, sendEmoji, sendMessage } from "../../utils/agoraActions";
+import { playTrack, sendEmoji, sendMessage } from "../../../utils/agoraActions";
 
-export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
+export default async function berumaMain(bot_id, rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) {
   const firstTrack = await playTrack("/assets/audio/users/beruma/first.wav", false, 1000, rtcClient);
 
     firstTrack.on("source-state-change", async (state) => {

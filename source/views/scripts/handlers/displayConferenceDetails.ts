@@ -72,6 +72,11 @@ export function displayConferenceDetails(conference: ConferenceCall): void {
   `;
 
   document.getElementById('joinButton')?.addEventListener('click', async () => {
+    if (!conference.id) {
+      console.error('❌ Conference ID is missing');
+      alert('Conference IDが見つかりません。');
+      return;
+    }
     await handleJoinClick(conference.id, conference);
   });
 }

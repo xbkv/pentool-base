@@ -1,5 +1,4 @@
-// import { HttpsProxyAgent } from "https-proxy-agent";
-// const proxyAgent = new HttpsProxyAgent(process.env.PROXY_URL);
+import { proxyManager } from "../../utils/proxyConfig";
 
 import { Request, Response, Router } from "express";
 import { BotModel, IBot } from "../../models/Bot";
@@ -9,7 +8,7 @@ import fetch from 'node-fetch'
 import router from "..";
 import dotenv from 'dotenv';
 import { colors, setColor } from "../../utils/color_util";
-import { ERROR_CODES } from "../../constants/errorCodes";
+import { ERROR_CODES } from "../../constants/errors";
 dotenv.config();
 
 const localhost = `http://localhost:${process.env.PORT}`
@@ -27,7 +26,16 @@ router.get('/v1/posts/active_call', async (req: Request, res: Response) => {
             const getActiveCallUserApiUrl: string = `${process.env.YAY_HOST}/v1/posts/active_call?user_id=${user_id}`;
             const randomBotIdResponse = await fetch(`${process.env.HOST || localhost}/api/bot-api/random_bot_id`);
             const randomBotIdData = await randomBotIdResponse.json();
-            const bot_id: string = randomBotIdData.bot.id;
+            const bot_id: string = randomBotIdData.bot?.id;
+            
+            if (!bot_id) {
+                res.status(ERROR_MESSAGE.NOT_FOUND.botNotFound.code).json({
+                    result: RESULT_MESSAGE.ERROR.message,
+                    message: "Bot ID not found in response",
+                    error_code: ERROR_MESSAGE.NOT_FOUND.botNotFound.code,
+                });
+                return;
+            }
 
             const firstBot: IBot = await BotModel.findOne({ user_id: bot_id });
             if (!firstBot) {
@@ -45,18 +53,17 @@ router.get('/v1/posts/active_call', async (req: Request, res: Response) => {
             };
 
             const fetchYayActiveCallData = async (token: string) => {
-                const response = await fetch(getActiveCallUserApiUrl, {
+                const fetchOptions = proxyManager.applyToFetchOptions({
                     headers: {
                         ...headers,
                         Authorization: `Bearer ${token}`,
-                    },
-                    // agent: proxyAgent
+                    }
                 });
+                const response = await fetch(getActiveCallUserApiUrl, fetchOptions);
                 return response.json();
             };
 
             let yayActiveCallData = await fetchYayActiveCallData(firstBot.access_token);
-
             if (yayActiveCallData.error_code === -3) {
                 await updateAccessToken(firstBot);
                 const reBot: IBot = await BotModel.findOne({ user_id: bot_id });
@@ -100,7 +107,10 @@ router.get("/v2/calls/conferences/:conference_id", async (req: Request, res: Res
       const fetchRandomBot = async () => {
         const response = await fetch(`${process.env.HOST || localhost}/api/bot-api/random_bot_id`);
         const data = await response.json();
-        const bot_id = data.bot.id;
+        const bot_id = data.bot?.id;
+        if (!bot_id) {
+          throw new Error("Bot ID not found in response");
+        }
         const bot = await BotModel.findOne({ user_id: bot_id });
         return { bot_id, bot };
       };
@@ -111,7 +121,8 @@ router.get("/v2/calls/conferences/:conference_id", async (req: Request, res: Res
           "Authorization": `Bearer ${token}`,
           "User-Agent": process.env.USER_AGENT,
         };
-        const response = await fetch(getConferenceCallIdApiUrl, { headers });
+        const fetchOptions = proxyManager.applyToFetchOptions({ headers });
+        const response = await fetch(getConferenceCallIdApiUrl, fetchOptions);
         return response.json();
       };
   
@@ -209,7 +220,16 @@ router.get("/v2/posts/:post_id", async (req: Request, res: Response) => {
             const getBotIdUrl = `${process.env.HOST || localhost}/api/bot-api/random_bot_id`;
             const botIdResponse = await fetch(getBotIdUrl);
             const botIdData = await botIdResponse.json();
-            const bot_id = botIdData.bot.id;
+            const bot_id = botIdData.bot?.id;
+            
+            if (!bot_id) {
+                res.status(ERROR_MESSAGE.NOT_FOUND.botNotFound.code).json({
+                    result: RESULT_MESSAGE.ERROR.message,
+                    message: "Bot ID not found in response",
+                    error_code: ERROR_MESSAGE.NOT_FOUND.botNotFound.code,
+                });
+                return;
+            }
 
             let bot = await BotModel.findOne({ user_id: bot_id });
             if (!bot) {
@@ -227,7 +247,8 @@ router.get("/v2/posts/:post_id", async (req: Request, res: Response) => {
                     "Authorization": `Bearer ${token}`,
                     "User-Agent": process.env.USER_AGENT,
                 };
-                const response = await fetch(url, { headers });
+                const fetchOptions = proxyManager.applyToFetchOptions({ headers });
+                const response = await fetch(url, fetchOptions);
                 return response.json();
             };
 
@@ -298,7 +319,8 @@ router.get("/v1/calls/:call_id/participants/:uuid/bot_id/:bot_id", async (req: R
         "Authorization": `Bearer ${token}`,
         "User-Agent": process.env.USER_AGENT,
       };
-      const response = await fetch(yayApiUrl, { headers });
+      const fetchOptions = proxyManager.applyToFetchOptions({ headers });
+      const response = await fetch(yayApiUrl, fetchOptions);
       return response.json();
     };
 
