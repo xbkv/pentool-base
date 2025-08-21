@@ -62,5 +62,5 @@ app.listen(PORT, () => {
 });
 
 (async () => {
-  await connectDB(); // ← ここで1回だけ接続
+  await connectDB();
 })();
