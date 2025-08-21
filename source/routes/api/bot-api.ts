@@ -4,19 +4,7 @@ import { ERROR_MESSAGE, RESULT_MESSAGE } from "./messages";
 import { BotModel } from "../../models/Bot";
 import router from "..";
 
-router.get("/random_bot_id", async (req: Request, res: Response) => {
-    try {
-        const randomBotId = await getRandomBotId();
-            
-        res.status(200).json({
-            result: RESULT_MESSAGE.SUCCESS,
-            bot: { id: randomBotId },
-        });
-
-    } catch (error) {
-        console.error("Error fetching random bot ID:", error);
-
-        res.status(500).json({
+router.get("/random_bot_id", async (req: Request, res: Resp
             result: RESULT_MESSAGE.ERROR,
             message: error.message || "An internal error occurred.",
         });
