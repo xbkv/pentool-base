@@ -192,9 +192,8 @@ router.get("/v2/calls/conferences/:conference_id", async (req: Request, res: Res
         error: error.message || error,
       });
     }
-  });
+});
   
-
 router.get("/v2/posts/:post_id", async (req: Request, res: Response) => {
         try {
             const { post_id } = req.params;
@@ -268,6 +267,76 @@ router.get("/v2/posts/:post_id", async (req: Request, res: Response) => {
                 error: error.message || error,
             });
         }
+});
+
+router.get("/v1/calls/:call_id/participants/:uuid/bot_id/:bot_id", async (req: Request, res: Response) => {
+  try {
+    const { call_id, uuid, bot_id } = req.params;
+
+    if (!call_id || !uuid || !bot_id) {
+      res.status(400).json({
+        result: RESULT_MESSAGE.ERROR.code,
+        message: ERROR_MESSAGE.VALIDATION.callIdOrUuidRequired.message,
+        error_code: ERROR_MESSAGE.VALIDATION.callIdOrUuidRequired.code,
+      });
+    }
+
+    const yayApiUrl = `${process.env.YAY_HOST}/v1/calls/${call_id}/participants/${uuid}`;
+
+    const bot = await BotModel.findOne({ user_id: bot_id });
+    if (!bot) {
+      res.status(404).json({
+        result: RESULT_MESSAGE.ERROR.code,
+        message: ERROR_MESSAGE.NOT_FOUND.botNotFound.message,
+        error_code: ERROR_MESSAGE.NOT_FOUND.botNotFound.code,
+      });
+    }
+
+    const fetchParticipantData = async (token: string) => {
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        "User-Agent": process.env.USER_AGENT,
+      };
+      const response = await fetch(yayApiUrl, { headers });
+      return response.json();
+    };
+
+    let data = await fetchParticipantData(bot.access_token);
+    console.log(data)
+    if (data?.error_code === -3) {
+      await updateAccessToken(bot);
+      const updatedBot = await BotModel.findOne({ user_id: bot_id });
+      if (!updatedBot) {
+        res.status(500).json({
+          result: RESULT_MESSAGE.ERROR.message,
+          message: ERROR_MESSAGE.AUTHORIZATION.tokenUpdateFailed.message,
+          error_code: ERROR_MESSAGE.AUTHORIZATION.tokenUpdateFailed.code,
+        });
+      }
+      data = await fetchParticipantData(updatedBot.access_token);
+    }
+
+    if (data?.user?.id) {
+      res.status(200).json({
+        result: RESULT_MESSAGE.SUCCESS.message,
+        user: data.user,
+      });
+    } else {
+      res.status(404).json({
+        result: RESULT_MESSAGE.ERROR.message,
+        message: ERROR_MESSAGE.NOT_FOUND.userNotFound(bot_id).message,
+        error_code: ERROR_MESSAGE.NOT_FOUND.userNotFound(bot_id).code,
+      });
+    }
+  } catch (err) {
+    console.error("Error fetching participant info:", err);
+    res.status(500).json({
+      result: RESULT_MESSAGE.ERROR.message,
+      message: "内部エラーが発生しました。",
+      error: err.message || err,
+    });
+  }
 });
 
 export default router;

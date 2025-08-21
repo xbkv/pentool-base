@@ -1,9 +1,59 @@
+import { IAgoraRTCClient } from "agora-rtc-sdk-ng";
+import { RtmChannel } from "agora-rtm-sdk";
 import { playTrack, sendEmoji } from "../utils/agoraActions";
+import { v4 as uuidv4 } from "uuid";
+import { IRemoteAudioTrack } from "agora-rtc-sdk-ng/esm";
 
-export function setupFuckBotUI(rtcClient, rtmChannel) {
+async function fetchAndDisplayParticipants(rtcClient: IAgoraRTCClient, rtmChannel: RtmChannel, callId: string, bot_id: string) {
+  const buttonsDiv = document.getElementById("emoji-buttons");
+  if (!buttonsDiv) return;
+
+  const users = await rtmChannel.getMembers();
+  console.log(users);
+
+  for (const user of users) {
+    const uuid = String(user); 
+    try {
+      const res = await fetch(`/yay-api/v1/calls/${callId}/participants/${uuid}/bot_id/${bot_id}`);
+      const data = await res.json();
+      const nickname = data.user.nickname || "(no name)";
+      const userId = uuid;
+
+      // 👞 Kick ボタン
+      const kickBtn = document.createElement("button");
+      kickBtn.className = "btn btn-danger btn-sm mb-2 me-2";
+      kickBtn.textContent = `👞 Kick ${nickname}`;
+      kickBtn.addEventListener("click", () => {
+        const timestamp = Math.floor(Date.now() / 1000);
+        const randomId = uuidv4();
+        const message = `kick ${userId} ${timestamp} ${randomId}`;
+        rtmChannel.sendMessage({ text: message });
+      });
+      buttonsDiv.appendChild(kickBtn);
+
+      // 🔇 Mute ボタン
+      const muteBtn = document.createElement("button");
+      muteBtn.className = "btn btn-secondary btn-sm mb-2 me-2";
+      muteBtn.textContent = `🔇 Mute ${nickname}`;
+      muteBtn.addEventListener("click", () => {
+        const timestamp = Math.floor(Date.now() / 1000);
+        const randomId = uuidv4();
+        const message = `muteAudio ${userId} ${timestamp} ${randomId}`;
+        rtmChannel.sendMessage({ text: message });
+      });
+      buttonsDiv.appendChild(muteBtn);
+
+    } catch (err) {
+      console.error(`Failed to fetch user ${uuid}:`, err);
+    }
+  }
+}
+
+
+export function setupFuckBotUI(rtcClient: IAgoraRTCClient, rtmChannel: RtmChannel, callId: string, bot_id: string) {
   const container = document.getElementById("fuck-bot-ui");
   const buttonsDiv = document.getElementById("emoji-buttons");
-
+  fetchAndDisplayParticipants(rtcClient, rtmChannel, callId, bot_id);
   if (!container || !buttonsDiv) return;
 
   const emojis = [
@@ -37,7 +87,18 @@ export function setupFuckBotUI(rtcClient, rtmChannel) {
   input.className = "form-control";
   input.placeholder = "文字列を入力してください";
   input.id = "emoji-input";
+  rtcClient.on("user-published", async (user, mediaType) => {
+   if (mediaType === "audio") {
+    await rtcClient.subscribe(user, mediaType);
+    const remoteAudioTrack = user.audioTrack;
 
+    if (remoteAudioTrack) {
+      remoteAudioTrack.play();
+    } else {
+      console.warn("audioTrack is undefined");
+    }
+  }
+});
   const sendBtn = document.createElement("button");
   sendBtn.className = "btn btn-success";
   sendBtn.textContent = "送信";
@@ -45,7 +106,7 @@ export function setupFuckBotUI(rtcClient, rtmChannel) {
     const text = input.value.trim();
     for (const char of text) {
       await sendEmoji(char, rtmChannel);
-      await new Promise(res => setTimeout(res, 150)); // 少し間隔をあける
+      await new Promise(res => setTimeout(res, 150));
     }
     input.value = "";
   });
@@ -65,7 +126,7 @@ export function setupFuckBotUI(rtcClient, rtmChannel) {
   container.style.display = "block";
   rtmChannel.on("ChannelMessage", async (message, memberId, messageProps) => {
     const msgText = message.text;
-
+    console.log(message)
     if (typeof msgText === "string") {
       const sounds = [
         "/assets/audio/kick/ganbare.mp3",

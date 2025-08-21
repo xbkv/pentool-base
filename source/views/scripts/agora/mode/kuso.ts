@@ -24,12 +24,12 @@ export async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: 
 
   sendSequentialEmojis(emotes, 300, rtmChannel, 1000);
 
-  sendSequentialEmojis(extraEmotes, 300, rtmChannel, 6000);
+  sendSequentialEmojis(extraEmotes, 300, rtmChannel, 3200);
 
   setTimeout(() => {
 
     sendAcceleratingNumbers(rtmChannel, 1, 300);
-  }, 8000);
+  }, 5500);
 
   function sendAcceleratingNumbers(channel, start = 1, initialDelay = 2000) {
     let count = start;
@@ -40,7 +40,6 @@ export async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: 
       try {
         const digits = String(count++);
         
-        // 1文字ずつ順番に送信（awaitで順に送る）
         for (const char of digits) {
           await sendEmoji(char, channel);
         }
@@ -60,7 +59,7 @@ export async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtcClient: 
 
   firstTrack.on("source-state-change", async (state) => {
     if (state === "stopped") {
-      await playTrack("/assets/audio/users/rinapen/second.wav", true, 1000, rtcClient);
+        await playTrack("/assets/audio/users/rinapen/second.wav", true, 1000, rtcClient);
       const text = "見える…聞こえる…感じる…止まらない…全ての情報が…永遠に流れ込む…君はもう動けない…";
       const emotes = ["🌀", "♾️", "👁️", "💫", "🧠", "🕳️", "🕰️", "📡", "🔁", "🧿", "🖤", "🪐"];
       // const emotes = ["上", "野", "え", "い", "と", ]
@@ -92,9 +91,9 @@ export const handleMusicMode = async (bot_id: string, rtmChannel: RtmChannel, rt
   const send = (t: string) => sendMessage(bot_id, t, rtmChannel);
   const emoji = (e: string) => sendEmoji(e, rtmChannel);
 
-  const firstTrack = await playTrack("/assets/audio/rinapen/amazing.m4a", false, 100, rtcClient);
+  const firstTrack = await playTrack("/assets/audio/circus/amazing.m4a", false, 100, rtcClient);
   firstTrack.on("source-state-change", async () => {
-    await playTrack("/assets/audio/rinapen/everyday.m4a", true, 100, rtcClient);
+    await playTrack("/assets/audio/circus/everyday.m4a", true, 100, rtcClient);
   });
 
   setTimeout(async () => {

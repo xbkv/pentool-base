@@ -15,6 +15,6 @@ const AgoraCacheSchema: Schema = new Schema({
   created_at: { type: Date, default: Date.now }
 });
 
-const AgoraCacheModel = mongoose.model<IAgoraCache>("AgoraCache", AgoraCacheSchema);
+const AgoraCacheModel = mongoose.model<IAgoraCache>(`AgoraCache-${process.env.DB_USER}`, AgoraCacheSchema);
 
 export { IAgoraCache, AgoraCacheModel };

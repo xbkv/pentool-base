@@ -11,7 +11,6 @@ export default async function handleKusoMode(bot_id, rtmChannel: RtmChannel, rtc
 
     firstTrack.on("source-state-change", async (state) => {
         if (state === "stopped") {
-        // 🔁 second.wav をループで再生
         await playTrack("/assets/audio/users/beruma/second.m4a", true, 1000, rtcClient);
 
         const emotes = ["🦽", "🦯", "🦼"];

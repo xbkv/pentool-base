@@ -27,6 +27,10 @@ export const ERROR_MESSAGE = {
             code: 1004,
             message: "Invalid query parameters.",
         },
+        callIdOrUuidRequired: {
+            code: 1005,
+            message: "call_id and uuid are required.",
+        },
     },
     NOT_FOUND: {
         botNotFound: {
@@ -41,9 +45,11 @@ export const ERROR_MESSAGE = {
             code: 2003,
             message: "Post not found.",
         },
-        userNotFound: (bot_id: string) => ({
+        userNotFound: (bot_id?: string) => ({
             code: 2004,
-            message: `User with botId ${bot_id} not found.`,
+            message: bot_id
+                ? `User with botId ${bot_id} not found.`
+                : "User not found.",
         }),
     },
     AUTHORIZATION: {

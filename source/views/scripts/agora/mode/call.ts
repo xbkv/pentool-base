@@ -39,7 +39,7 @@ export async function handleCallMode(bot_id, rtmChannel: RtmChannel, rtcClient: 
     }
 
     sendSequentialEmojis(emotes, 300, rtmChannel, 1000);
-    sendSequentialEmojis(extraEmotes, 300, rtmChannel, 3000);
+    sendSequentialEmojis(extraEmotes, 300, rtmChannel, 4000);
 
     function sendAcceleratingNumbers(channel, start = 1, initialDelay = 2000) {
       let count = start;
@@ -82,7 +82,5 @@ export async function handleCallMode(bot_id, rtmChannel: RtmChannel, rtcClient: 
       setInterval(() => sendEmoji(emotes[emoteIndex++ % emotes.length], rtmChannel), 50);
       setInterval(() => rtmChannel.sendMessage({ text: `requestLiftAudioMute` }), 50);
     });
-
-    // ======== 本来の処理ここまで ========
   });
 }

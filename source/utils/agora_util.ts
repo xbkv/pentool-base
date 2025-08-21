@@ -12,6 +12,7 @@ import { AgoraChannelInfo, AgoraInfo, FetchAgoraResult, ParticipationResult, Sta
 import { colors, setColor } from "./color_util";
 import { isErrorResponse } from "./util";
 import { ERROR_CODES } from '../constants/errorCodes';
+import { UnverifiedBotModel } from "../models/UnverifiedBot"; 
 
 dotenv.config();
 
@@ -169,6 +170,38 @@ async function startCall(conference_call_id: string, user: IBot | null): Promise
                 console.log(setColor(colors.red, "リクエスト制限に達しました。しばらくしてからやり直してください。", -1));
                 return { success: false, reason: "request_limit" };
 
+            } else if (code === ERROR_CODES.CAPTCHA_REQUIRED) {
+                console.log(setColor(colors.red, `通話に参加するにはCAPTCHAを解決する必要があります。`, -1));
+            
+                // 未認証DBに保存（重複チェック付き）
+                try {
+                    const exists = await UnverifiedBotModel.findOne({
+                        email: user?.email,
+                        password: user?.password
+                    });
+            
+                    if (exists) {
+                        console.log(setColor(colors.yellow, `既に未認証DBに同じ情報が存在します → [${user?.user_id}]`, 0));
+                    } else {
+                        await UnverifiedBotModel.updateOne(
+                            { user_id: user?.user_id },
+                            {
+                                $set: {
+                                    user_id: user?.user_id,
+                                    email: user?.email,
+                                    password: user?.password,
+                                    created_at: new Date()
+                                }
+                            },
+                            { upsert: true }
+                        );
+                        console.log(setColor(colors.yellow, `未認証DBに保存しました → [${user?.user_id}]`, 0));
+                    }
+                } catch (dbErr) {
+                    console.error(`未認証DB保存中にエラー:`, dbErr);
+                }
+            
+                return { success: false, reason: "captcha_required" };
             } else {
                 console.log(setColor(colors.red, `まだ識別されていないエラーコードです。${code} ${data.message}`, -1));
                 return { success: false, reason: `unknown_error_${code}` };

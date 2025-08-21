@@ -5,12 +5,15 @@ import { setupFuckBotUI } from "../ui/fuckBotUI";
 import { botStatusResponse } from "./types";
 import { handleKusoMode, handleMusicMode } from "./mode/kuso";
 import { handleCallMode } from "./mode/call";
+import { playTrack } from "../utils/agoraActions";
+import { handleFlyMode } from "./mode/fly";
+import { handleEdenMode } from "./mode/eden";
 // const handleKusoMode = async (rtmChannel: RtmChannel, rtcClient: IAgoraRTCClient) => {
 //     const loopRandomAudio = async () => {
 //       const sounds = [
-//         "/assets/audio/dareyanen.wav",
-//         "/assets/audio/sine.wav",
-//         "/assets/audio/mazidedareyanen.wav"
+//         "/assets/audio/gaiaku/dareyanen.wav",
+//         "/assets/audio/gaiaku/sine.wav",
+//         "/assets/audio/gaiaku/mazidedareyanen.wav"
 //       ];
 //       while (true) {
 //         const delay = Math.random() * (60000 - 1000) + 1000; // 1秒〜3分
@@ -25,8 +28,8 @@ import { handleCallMode } from "./mode/call";
 //     if ("text" in message && typeof message.text === "string") {
 //       const msgText = message.text;
 //             const sounds = [
-//         "/assets/audio/sine.wav",
-//         "/assets/audio/yamee.wav"
+//         "/assets/audio/gaiaku/sine.wav",
+//         "/assets/audio/gaiaku/yamee.wav"
 //       ];
 //       const sound = sounds[Math.floor(Math.random() * sounds.length)];
 //       if (msgText.startsWith("kick") || msgText.startsWith("muteAudio")) {
@@ -77,10 +80,14 @@ export async function joinCall(conferenceCallId: string, mode: 'music' | 'fuck' 
 
     if (mode === "kuso") {
       await handleKusoMode(botId, rtmChannel, rtcClient);
+      // await handleCallMode(botId, rtmChannel, rtcClient);
     } else if (mode === "music") {
-      await handleCallMode(botId, rtmChannel, rtcClient);
+      // await handleCallMode(botId, rtmChannel, rtcClient);
+      // await handleMusicMode(botId, rtmChannel, rtcClient);
+      await handleEdenMode(botId, rtmChannel, rtcClient);
+      // await handleFlyMode(botId, rtmChannel, rtcClient);
     } else if (mode === "fuck") {
-      setupFuckBotUI(rtcClient, rtmChannel);
+      setupFuckBotUI(rtcClient, rtmChannel, conferenceCallId, botId);
       const localTrack: IMicrophoneAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
       await rtcClient.publish([localTrack]);
     }
