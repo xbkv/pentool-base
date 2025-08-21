@@ -5,4 +5,5 @@ node_modules/
 error_log.txt
 yarn.lock
 source/views/assets/audio/rinapen
-.env
+script.js
+gomi.js
